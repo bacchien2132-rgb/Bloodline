@@ -1,0 +1,177 @@
+import { useState } from "react";
+import { motion } from "framer-motion";
+
+const reactionsList = ["👍", "❤️", "😂", "😮", "😢", "😡"];
+
+export default function BachNguyetSocial() {
+  const [posts, setPosts] = useState([
+    {
+      id: 1,
+      author: "Sắc Ảnh Xuân",
+      class: "11A2 - Âm Nhạc",
+      content: "Hôm nay tập piano đến 9h tối 🌙✨",
+      reactions: {},
+      comments: []
+    },
+    {
+      id: 2,
+      author: "Tựu Nhưỡng Di",
+      class: "11D11 - Vũ Đạo",
+      content: "Studio hôm nay cháy sân khấu 🔥",
+      reactions: {},
+      comments: []
+    }
+  ]);
+
+  const [newPost, setNewPost] = useState("");
+
+  const addPost = () => {
+    if (!newPost.trim()) return;
+    const post = {
+      id: Date.now(),
+      author: "Bạn",
+      class: "11A2 - Âm Nhạc",
+      content: newPost,
+      reactions: {},
+      comments: []
+    };
+    setPosts([post, ...posts]);
+    setNewPost("");
+  };
+
+  const addReaction = (postId, reaction) => {
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              reactions: {
+                ...post.reactions,
+                [reaction]: (post.reactions[reaction] || 0) + 1
+              }
+            }
+          : post
+      )
+    );
+  };
+
+  const addComment = (postId, commentText) => {
+    if (!commentText.trim()) return;
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: [
+                ...post.comments,
+                { id: Date.now(), text: commentText }
+              ]
+            }
+          : post
+      )
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white">
+      {/* Navbar */}
+      <div className="sticky top-0 bg-white/5 backdrop-blur-md p-4 flex justify-between items-center shadow-lg">
+        <h1 className="text-xl font-bold tracking-widest">BẠCH NGUYỆT SOCIAL</h1>
+        <div className="space-x-6 text-sm">
+          <span className="hover:text-indigo-300 cursor-pointer">Trang Chủ</span>
+          <span className="hover:text-indigo-300 cursor-pointer">Hồ Sơ</span>
+          <span className="hover:text-indigo-300 cursor-pointer">Thông Báo</span>
+        </div>
+      </div>
+
+      {/* Post Creator */}
+      <div className="max-w-2xl mx-auto mt-8 p-6 bg-white/5 rounded-2xl shadow-xl">
+        <textarea
+          value={newPost}
+          onChange={(e) => setNewPost(e.target.value)}
+          placeholder="Bạn đang nghĩ gì?"
+          className="w-full p-4 rounded-xl bg-slate-800 text-white resize-none outline-none"
+        />
+        <button
+          onClick={addPost}
+          className="mt-4 bg-indigo-500 hover:bg-indigo-600 px-6 py-2 rounded-xl font-semibold transition"
+        >
+          Đăng Bài
+        </button>
+      </div>
+
+      {/* Posts */}
+      <div className="max-w-2xl mx-auto mt-8 space-y-6 pb-20">
+        {posts.map((post) => (
+          <motion.div
+            key={post.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white/5 p-6 rounded-2xl shadow-xl"
+          >
+            <div className="mb-4">
+              <h2 className="font-semibold text-lg">{post.author}</h2>
+              <p className="text-sm text-gray-400">{post.class}</p>
+            </div>
+            <p className="mb-4 text-gray-200">{post.content}</p>
+
+            {/* Reactions */}
+            <div className="flex flex-wrap gap-3 mb-4">
+              {reactionsList.map((reaction) => (
+                <button
+                  key={reaction}
+                  onClick={() => addReaction(post.id, reaction)}
+                  className="bg-slate-800 px-3 py-1 rounded-xl hover:scale-110 transition"
+                >
+                  {reaction} {post.reactions[reaction] || 0}
+                </button>
+              ))}
+            </div>
+
+            {/* Comments */}
+            <CommentSection
+              post={post}
+              addComment={addComment}
+            />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CommentSection({ post, addComment }) {
+  const [comment, setComment] = useState("");
+
+  return (
+    <div>
+      <div className="space-y-2 mb-3">
+        {post.comments.map((c) => (
+          <div
+            key={c.id}
+            className="bg-slate-800 p-2 rounded-lg text-sm"
+          >
+            {c.text}
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Viết bình luận..."
+          className="flex-1 p-2 rounded-lg bg-slate-800 outline-none"
+        />
+        <button
+          onClick={() => {
+            addComment(post.id, comment);
+            setComment("");
+          }}
+          className="bg-indigo-500 hover:bg-indigo-600 px-4 rounded-lg"
+        >
+          Gửi
+        </button>
+      </div>
+    </div>
+  );
+}
